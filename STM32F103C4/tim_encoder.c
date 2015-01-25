@@ -17,12 +17,30 @@ void TIM_encoder_Configuration(void)
 	/* Define gpio_config ---------------------------------------------------*/
 	GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9;
 	GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_IPD;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	/* Set up TIM_encoder function --------------------------------------------------*/
 	/* プリスケーラの値の設定 */
-	PrescalerValue = (uint16_t) ((SystemCoreClock ) / 84000000) - 1;
+	PrescalerValue = (uint16_t) ((SystemCoreClock ) / 36000000) - 1;
+
+	/* メンバの値の設定 */
+	TIM_TimeBaseStructure.TIM_Period		= 0xffff-1;
+	TIM_TimeBaseStructure.TIM_Prescaler		= 0;
+	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_CounterMode 	= TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+
+	/* プリスケーラの設定 */
+	TIM_PrescalerConfig(TIM2, PrescalerValue, TIM_PSCReloadMode_Immediate);
+	TIM_PrescalerConfig(TIM3, PrescalerValue, TIM_PSCReloadMode_Immediate);
+
+	TIM_EncoderInterfaceConfig(TIM2, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
+	TIM_EncoderInterfaceConfig(TIM3, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
+
+	/* プリスケーラの値の設定 */
+	PrescalerValue = (uint16_t) ((SystemCoreClock ) / 72000000) - 1;
 
 	/* メンバの値の設定 */
 	TIM_TimeBaseStructure.TIM_Period		= 0xffff-1;
@@ -30,17 +48,11 @@ void TIM_encoder_Configuration(void)
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode 	= TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
-	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
 
 	/* プリスケーラの設定 */
 	TIM_PrescalerConfig(TIM1, PrescalerValue, TIM_PSCReloadMode_Immediate);
-	TIM_PrescalerConfig(TIM2, PrescalerValue, TIM_PSCReloadMode_Immediate);
-	TIM_PrescalerConfig(TIM3, PrescalerValue, TIM_PSCReloadMode_Immediate);
 
 	TIM_EncoderInterfaceConfig(TIM1, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
-	TIM_EncoderInterfaceConfig(TIM2, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
-	TIM_EncoderInterfaceConfig(TIM3, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 
 	/*更新割り込み設定*/
 #ifdef USE_INTERRUPT_TIM1

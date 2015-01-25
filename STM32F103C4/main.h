@@ -42,16 +42,16 @@
 #define USE_USART2
 #define USE_INTERRUPT_USART2
 
-#define USE_ENCODER
-#define USE_INTERRUPT_TIM1
-#define USE_INTERRUPT_TIM2
-#define USE_INTERRUPT_TIM3
+//#define USE_ENCODER
+//#define USE_INTERRUPT_TIM1
+//#define USE_INTERRUPT_TIM2
+//#define USE_INTERRUPT_TIM3
 
-#define USE_ADC
+//#define USE_ADC
 
 #define USE_CAN
 #define USE_INTERRUPT_CAN_RX
-#define USE_INTERRUPT_CAN_TX
+//#define USE_INTERRUPT_CAN_TX
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_conf.h"
@@ -60,7 +60,6 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_tim.h"
-
 #include "stm32f10x_can.h"
 
 /* user_hedder --------------------------------------------------------------*/
@@ -73,62 +72,15 @@
 #define CAN_NodeId_Dualshock3	0x003	//0x00~0x1F
 #define CAN_NodeId_STM32F4_1	0x0F
 
-//Dualshock3のデータ解析用
-//この列挙型の値はArduino側の設定と合わせる
-enum {
-	start = 'a',
-	select,
-	left_x,
-	left_y,
-	right_x,
-	right_y,
-	L1,L2,
-	R1,R2,
-	Triangle,
-	Circle,
-	Cross,
-	Square,
-	Up,
-	Right,
-	Down,
-	Left,
-}Mnemonic;
-
-typedef struct _Button{
-	uint8_t	value;
-}Button;
-
-typedef struct _DualshockBotton{
-	Button	start,
-			select,
-			left_x,
-			left_y,
-			right_x,
-			right_y,
-			L1,
-			L2,
-			R1,
-			R2,
-			Triangle,
-			Circle,
-			Cross,
-			Square,
-			Up,
-			Right,
-			Down,
-			Left;
-}DualshockBotton;
-
-
-
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void init();
-void ColorfulRingOfDeath(void);
-
+void USB_HP_CAN1_TX_IRQHandler(void);
+void USB_LP_CAN1_RX0_IRQHandler(void);
+void CAN1_SCE_IRQHandler(void);
 #endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

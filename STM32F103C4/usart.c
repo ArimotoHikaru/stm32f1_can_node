@@ -1,6 +1,6 @@
 #include "usart.h"
 
-#define USART2_BAUDRATE 19200
+#define USART2_BAUDRATE 115200
 
 #define USART2_TxBufferSize  200//リングバッファの要素数
 #define USART2_RxBufferSize  200//リングバッファの要素数
@@ -41,7 +41,7 @@ void USART2_Configuration(void)
 	USART_InitStructure.USART_StopBits 				= USART_StopBits_1;
 	USART_InitStructure.USART_Parity 				= USART_Parity_No;
 	USART_InitStructure.USART_HardwareFlowControl 	= USART_HardwareFlowControl_None;
-	USART_InitStructure.USART_Mode 					= USART_Mode_Rx | USART_Mode_Tx;
+	USART_InitStructure.USART_Mode 					= USART_Mode_Tx | USART_Mode_Rx;
 	USART_Init(USART2, &USART_InitStructure);
 
 #ifdef USE_INTERRUPT_USART2

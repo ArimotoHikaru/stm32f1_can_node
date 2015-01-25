@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    gpio_toggle_led_by_delay/stm32f10x_it.c
+  * @file    tim4_scan_rotary_encoder/stm32f10x_it.c
   * @author  Yasuo Kawachi
   * @version V1.0.0
   * @date    04/15/2009
@@ -42,12 +42,11 @@
   * COPYRIGHT 2009 STMicroelectronics
   */
 
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_tim.h"
-
+#include "main.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -58,146 +57,94 @@
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
-void ColorfulRingOfDeath(void)
-{
-	uint16_t ring = 1;
-	while (1)
-	{
-		uint32_t count = 0;
-		while (count++ < 500000);
 
-		//GPIOD->BSRRH = (ring << 12);
-		ring = ring << 1;
-		if (ring >= 1<<4)
-		{
-			ring = 1;
-		}
-		//GPIOD->BSRRL = (ring << 12);
-	}
-}
-/*******************************************************************************
-* Function Name  : NMI_Handler
-* Description    : This function handles NMI exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles NMI exception.
+  * @param  None
+  * @retval : None
+  */
 void NMI_Handler(void)
 {
 }
 
-/*******************************************************************************
-* Function Name  : HardFault_Handler
-* Description    : This function handles Hard Fault exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles Hard Fault exception.
+  * @param  None
+  * @retval : None
+  */
 void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
-	ColorfulRingOfDeath();
+  while (1)
+  {
+  }
 }
 
-/*******************************************************************************
-* Function Name  : MemManage_Handler
-* Description    : This function handles Memory Manage exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles Memory Manage exception.
+  * @param  None
+  * @retval : None
+  */
 void MemManage_Handler(void)
 {
   /* Go to infinite loop when Memory Manage exception occurs */
-	ColorfulRingOfDeath();
+  while (1)
+  {
+  }
 }
 
-/*******************************************************************************
-* Function Name  : BusFault_Handler
-* Description    : This function handles Bus Fault exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles Bus Fault exception.
+  * @param  None
+  * @retval : None
+  */
 void BusFault_Handler(void)
 {
   /* Go to infinite loop when Bus Fault exception occurs */
-	ColorfulRingOfDeath();
+  while (1)
+  {
+  }
 }
 
-/*******************************************************************************
-* Function Name  : UsageFault_Handler
-* Description    : This function handles Usage Fault exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles Usage Fault exception.
+  * @param  None
+  * @retval : None
+  */
 void UsageFault_Handler(void)
 {
   /* Go to infinite loop when Usage Fault exception occurs */
-	ColorfulRingOfDeath();
+  while (1)
+  {
+  }
 }
 
-/*******************************************************************************
-* Function Name  : SVC_Handler
-* Description    : This function handles SVCall exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles SVCall exception.
+  * @param  None
+  * @retval : None
+  */
 void SVC_Handler(void)
 {
 }
 
-/*******************************************************************************
-* Function Name  : DebugMon_Handler
-* Description    : This function handles Debug Monitor exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles Debug Monitor exception.
+  * @param  None
+  * @retval : None
+  */
 void DebugMon_Handler(void)
 {
 }
 
-/*******************************************************************************
-* Function Name  : PendSV_Handler
-* Description    : This function handles PendSVC exception.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
+/**
+  * @brief  This function handles PendSV_Handler exception.
+  * @param  None
+  * @retval : None
+  */
 void PendSV_Handler(void)
 {
 }
-
-/*******************************************************************************
-* Function Name  : SysTick_Handler
-* Description    : This function handles SysTick Handler.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-/*
-void SysTick_Handler(void)
-{
-
-
-}
-*/
-/******************************************************************************/
-/*            STM32F10x Peripherals Interrupt Handlers                        */
-/******************************************************************************/
-
-
-
-/******************************************************************************/
-/*                 STM32F10x Peripherals Interrupt Handlers                   */
-/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
-/*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32f10x_xx.s).                                            */
-/******************************************************************************/
-
 /*******************************************************************************
 * Function Name  : PPP_IRQHandler
 * Description    : This function handles PPP interrupt request.
@@ -208,10 +155,10 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
-volatile uint32_t 	ticker=0, downticker=0;
-volatile uint32_t 	TIM1_over_flow, TIM1_under_flow,
-					TIM2_over_flow, TIM2_under_flow,
-					TIM3_over_flow, TIM3_under_flow;
+volatile uint32_t 	ticker = 0, downticker = 0;
+volatile int32_t 	TIM1_over_flow = 0, TIM1_under_flow = 0,
+					TIM2_over_flow = 0, TIM2_under_flow = 0,
+					TIM3_over_flow = 0, TIM3_under_flow = 0;
 /*******************************************************************************
 * Function Name  : SysTick_IRQHandler
 * Description    : This function handles SysTick interrupt request.
@@ -229,6 +176,7 @@ void SysTick_Handler(void)
 	}
 }
 
+
 /*******************************************************************************
 * Function Name  : TIM1_UP_IRQHandler
 * Description    : This function handles TIM4 interrupt request.
@@ -239,13 +187,14 @@ void SysTick_Handler(void)
 void TIM1_UP_IRQHandler(void)
 {
   if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
-     if((TIM1->CR1>>4) == 1){
+	 if(((TIM1->CR1)&0x10)>>4 == 0){
          TIM1_over_flow++;
      }else{
          TIM1_under_flow++;
      }
     TIM_ClearFlag(TIM1, TIM_IT_Update);
   }
+
 }
 /*******************************************************************************
 * Function Name  : TIM2_IRQHandler
@@ -257,7 +206,7 @@ void TIM1_UP_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   if(TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET){
-     if((TIM2->CR1>>4) == 1){
+     if(((TIM2->CR1)&0x10)>>4 == 0){
          TIM2_over_flow++;
      }else{
          TIM2_under_flow++;
@@ -275,7 +224,7 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET){
-     if((TIM3->CR1>>4) == 1){
+	  if(((TIM3->CR1)&0x10)>>4 == 0){
          TIM3_over_flow++;
      }else{
          TIM3_under_flow++;

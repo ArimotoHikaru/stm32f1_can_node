@@ -18,8 +18,8 @@ typedef struct _CAN_f{
 
 CAN_f CAN_fm[14]={
 //FNE	MODE	SCALE	STID    				RTR 		IDE			EXID
- {1,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//0
- {1,	MASK,   BIT16,	{0x0D,0x0E,0x0F,0x0A},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//1
+ {1,	LIST,   BIT16,	{0x001,0x000,0x000,0x000},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//0
+ {1,	MASK,   BIT16,	{0x001,0x000,0x000,0x000},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//1
  {0,	LIST,   BIT32,	{0x00,0x00},			{0,0},		{0,0},		{0,0}		},//2
  {0,	MASK,   BIT32,	{0x00,0x00},			{0,0},		{0,0},		{0,0}		},//3
  {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//4
@@ -64,14 +64,12 @@ void CAN_Configuration(void)
 
 	/* Define gpio_config ---------------------------------------------------*/
 	GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_11;
-	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF_PP;
 	GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_12;
 	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-
 
 	/* Set up CAN function -------------------------------------------------*/
 	/* タイムトリガ通信モードの有効化・無効化を設定する */
@@ -93,18 +91,18 @@ void CAN_Configuration(void)
 	CAN_InitStructure.CAN_TXFP 		= DISABLE;
 
 	/* CANのModeを設定する */
-	CAN_InitStructure.CAN_Mode 		= CAN_Mode_Normal;
+	CAN_InitStructure.CAN_Mode 		= CAN_Mode_LoopBack;
 
 	/* 再同期ジャンプ幅(CANハードウェアが再同期を行う際のビット幅)を時間単位の数で設定する */
 	CAN_InitStructure.CAN_SJW 		= CAN_SJW_1tq;
 
 	/* CANビットタイミングレジスタ(CAN_BTR)のTS1[3:0]を設定する。 */
-	CAN_InitStructure.CAN_BS1 		= CAN_BS1_6tq;
+	CAN_InitStructure.CAN_BS1 		= CAN_BS1_5tq;
 
 	/* CANビットタイミングレジスタ(CAN_BTR)のTS2[2:0]を設定する */
-	CAN_InitStructure.CAN_BS2 		= CAN_BS2_7tq;
+	CAN_InitStructure.CAN_BS2 		= CAN_BS2_6tq;
 
-	/* ボーレートプリスケーラ設定する 1～1024 APB1=42MHz*/
+	/* ボーレートプリスケーラ設定する 1～1024 APB1=36MHz*/
 	CAN_InitStructure.CAN_Prescaler	= 3;
 	//CANボーレート = 1Mbps
 	CAN_Init(CAN1, &CAN_InitStructure);
@@ -182,13 +180,8 @@ void CAN_Configuration(void)
 
 #ifdef USE_INTERRUPT_CAN_RX
 	CAN_ITConfig(CAN1, CAN_IT_FMP0,ENABLE);//message pending Interrupt
-	/*
-	CAN_ITConfig(CAN1, CAN_IT_EWG, ENABLE);//Error passive Interrupt
-	CAN_ITConfig(CAN1, CAN_IT_EPV, ENABLE);//Error passive Interrupt
-	CAN_ITConfig(CAN1, CAN_IT_BOF, ENABLE);//Bus-off Interrupt
-	CAN_ITConfig(CAN1, CAN_IT_LEC, ENABLE);//tLast error code Interrupt
-	CAN_ITConfig(CAN1, CAN_IT_ERR, ENABLE);//Error Interrupt
-	*/
+
+
 #endif
 
 #ifdef USE_INTERRUPT_CAN_TX
