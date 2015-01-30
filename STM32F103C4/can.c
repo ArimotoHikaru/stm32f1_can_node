@@ -59,12 +59,13 @@ void CAN_Configuration(void)
 	CAN_DeInit(CAN1);
 
 	/* Supply clock source --------------------------------------------------*/
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);//RCC_APB2Periph_AFIO有効にした
+
 
 	/* Define gpio_config ---------------------------------------------------*/
 	GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_11;
-	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Mode 	= GPIO_Mode_IPU;//←これ大事
 	GPIO_InitStructure.GPIO_Speed 	= GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	GPIO_InitStructure.GPIO_Pin 	= GPIO_Pin_12;
@@ -91,7 +92,7 @@ void CAN_Configuration(void)
 	CAN_InitStructure.CAN_TXFP 		= DISABLE;
 
 	/* CANのModeを設定する */
-	CAN_InitStructure.CAN_Mode 		= CAN_Mode_LoopBack;
+	CAN_InitStructure.CAN_Mode 		= CAN_Mode_Normal;
 
 	/* 再同期ジャンプ幅(CANハードウェアが再同期を行う際のビット幅)を時間単位の数で設定する */
 	CAN_InitStructure.CAN_SJW 		= CAN_SJW_1tq;
@@ -107,6 +108,7 @@ void CAN_Configuration(void)
 	//CANボーレート = 1Mbps
 	CAN_Init(CAN1, &CAN_InitStructure);
 
+#if 0
 	/* Set up CAN Filter function -------------------------------------------------*/
 	while(filter_num < 14){//フィルターの数だけ繰り返す0~13
 
@@ -177,11 +179,22 @@ void CAN_Configuration(void)
 		filter_num++;
 	}
 
+#else
 
+	CAN_FilterInitStructure.CAN_FilterNumber 			= 0;
+	CAN_FilterInitStructure.CAN_FilterFIFOAssignment	= 0;
+	CAN_FilterInitStructure.CAN_FilterMode				= CAN_FilterMode_IdMask;
+	CAN_FilterInitStructure.CAN_FilterScale				= CAN_FilterScale_16bit;
+	CAN_FilterInitStructure.CAN_FilterIdLow				= 0x0000;
+	CAN_FilterInitStructure.CAN_FilterMaskIdLow			= 0x0000;
+	CAN_FilterInitStructure.CAN_FilterIdHigh			= 0x0000;
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh		= 0x0000;
+	CAN_FilterInitStructure.CAN_FilterActivation 		= ENABLE;
+	CAN_FilterInit(&CAN_FilterInitStructure);
+
+#endif
 #ifdef USE_INTERRUPT_CAN_RX
 	CAN_ITConfig(CAN1, CAN_IT_FMP0,ENABLE);//message pending Interrupt
-
-
 #endif
 
 #ifdef USE_INTERRUPT_CAN_TX

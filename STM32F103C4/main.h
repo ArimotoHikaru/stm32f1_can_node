@@ -51,7 +51,7 @@
 
 #define USE_CAN
 #define USE_INTERRUPT_CAN_RX
-//#define USE_INTERRUPT_CAN_TX
+#define USE_INTERRUPT_CAN_TX
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_conf.h"
@@ -80,7 +80,6 @@
 void init();
 void USB_HP_CAN1_TX_IRQHandler(void);
 void USB_LP_CAN1_RX0_IRQHandler(void);
-void CAN1_SCE_IRQHandler(void);
 #endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

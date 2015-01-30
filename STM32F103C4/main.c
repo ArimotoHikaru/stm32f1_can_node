@@ -116,11 +116,9 @@ void USB_LP_CAN1_RX0_IRQHandler(void){
 	if (CAN_GetITStatus(CAN1,CAN_IT_FMP0)){//新しいメッセージを受信したら呼び出される
 		CAN_Receive(CAN1, CAN_FIFO0, &can_rx_flame);//受信
 	}
+
 }
 
-void CAN1_SCE_IRQHandler(void){
-	GPIO_WriteBit(GPIOA,GPIO_Pin_10, 1 );
-}
 
 #define CAN_TX
 
@@ -128,8 +126,10 @@ void CAN1_SCE_IRQHandler(void){
 //送信
 int main(void)
 {
-	char str[250] = {0};
+	char str[200] = {0};
 	char ledflag = 1;
+	char cantxstatus;
+
 
 	init();
 
@@ -137,32 +137,125 @@ int main(void)
 	can_tx_flame.ExtId		= 0x0;	//拡張フレームID 29bit 0～0x1FFFFFFF
 	can_tx_flame.IDE 		= 0;	//拡張フレームIDを使う場合1
 	can_tx_flame.RTR		= 0;	//データフレーム:0 リモートフレーム:1
-	can_tx_flame.DLC		= 1;	//送信するデータフィールドのバイト数 0~8
-	can_tx_flame.Data[0]	= 0xAB;	//送信するデータフィールド
+	can_tx_flame.DLC		= 3;	//送信するデータフィールドのバイト数 0~8
+	can_tx_flame.Data[0]	= 0x0D;	//送信するデータフィールド
+	can_tx_flame.Data[1]	= 0x0E;
+	can_tx_flame.Data[2]	= 0x0F;
 
+	sprintf(str,"CAN WAKE UP!\r\n");
+	transmit_uart2_s(str);
 
+	ticker = 0;
+	while(ticker < 300);
+
+	sprintf(str,"CAN TRANSMITTED!\r\n");
+	transmit_uart2_s(str);
 	CAN_Transmit(CAN1, &can_tx_flame);//送信
+
+	ticker = 0;
+	while(ticker < 100);
+
+
+#if 0
+	cantxstatus = CAN_TransmitStatus(CAN1,0);
+	while(CANTXOK != cantxstatus){
+
+		if(cantxstatus == CANTXFAILE){
+			sprintf(str,"FAILED\r\n");
+			transmit_uart2_s(str);
+			ticker = 0;
+			while(ticker < 100);
+		}else if(cantxstatus == CANTXPENDING){
+
+			sprintf(str,"CANTXPENDING %X\r\n", cantxstatus);
+			transmit_uart2_s(str);
+
+			ticker = 0;
+			while(ticker < 100);
+		}
+		cantxstatus = CAN_TransmitStatus(CAN1,0);
+	}
+	sprintf(str,"OK!\r\n");
+	transmit_uart2_s(str);
+
+	ticker = 0;
+	while(ticker < 100);
+
+	sprintf(str,"RECEIVE...\r\n");
+	transmit_uart2_s(str);
+
+	while(CAN_MessagePending(CAN1, CAN_FIFO0) == 0){
+		sprintf(str,"message_pending:%d\r\n",CAN_MessagePending(CAN1, CAN_FIFO0));
+		transmit_uart2_s(str);
+
+	}
+
+	sprintf(str,"OK!\r\n");
+	transmit_uart2_s(str);
+
+	CAN_Receive(CAN1, CAN_FIFO0, &can_rx_flame);//受信
+
+	ticker = 0;
+	while(ticker < 100);
+
+	sprintf(str,"StId:0x%X \n\rIDE:%d \n\rRTR:%d \n\rDLC:%X \n\rData[0]:0x%X \n\rData[1]:0x%X \n\rData[2]:0x%X \n\rRerror:%d \n\rTerror:%d \n\r\n\r"
+										,can_rx_flame.StdId
+										,can_rx_flame.IDE
+										,can_rx_flame.RTR
+										,can_rx_flame.DLC
+										,can_rx_flame.Data[0]
+										,can_rx_flame.Data[1]
+										,can_rx_flame.Data[2]
+										,CAN_GetReceiveErrorCounter(CAN1)
+										,CAN_GetLSBTransmitErrorCounter(CAN1)
+										);
+
+
+	transmit_uart2_s(str);
+
+
+	sprintf(str,"END\r\n");
+	transmit_uart2_s(str);
+
+
+
+
+	while(1);
+
+#endif
+
+
+
+
 
     while(1)
     {
 
     	if(downticker == 0 ){
-			downticker = 10;
+			downticker = 1000;
 			if(ledflag){
 				ledflag = 0;
-				GPIO_WriteBit(GPIOA,GPIO_Pin_10, 0);
+
+				//GPIO_WriteBit(GPIOA,GPIO_Pin_10, 0);
+#ifndef USE_INTERRUPT_CAN_TX
 				can_tx_flame.Data[0]++;	//送信するデータフィールド
 						if(can_tx_flame.Data[0]>0xff){
 							can_tx_flame.Data[0]=0x00;
 						}
 				CAN_Transmit(CAN1, &can_tx_flame);//送信
+				while(CANTXOK != CAN_TransmitStatus(CAN1,0));
+				sprintf(str,"CAN TRANSMITTED!\r\n");
+				transmit_uart2_s(str);
+
+#endif
+
 			}else{
 				ledflag = 1;
-				GPIO_WriteBit(GPIOA,GPIO_Pin_10, 1 );
+				//GPIO_WriteBit(GPIOA,GPIO_Pin_10, 1 );
 			}
 		}
 
-    	while(ticker > 500){
+    	while(ticker >= 500){
     		ticker = 0;
 /*
     		sprintf(str,"StId:0x%X \n\rIDE:%d \n\rRTR:%d \n\rDLC:%X \n\rData[0]:0x%X \n\rRerror:%d \n\rTerror:%d \n\r"
@@ -177,15 +270,19 @@ int main(void)
     		*/
 
 
-    		sprintf(str,"StId:0x%X \n\rIDE:%d \n\rRTR:%d \n\rDLC:%X \n\rData[0]:0x%X \n\rRerror:%d \n\rTerror:%d \n\r\n\r"
+    		sprintf(str,"StId:0x%X \n\rRTR:%d \n\rDLC:%X \n\rData[0]:0x%X \n\rData[1]:0x%X \n\rData[2]:0x%X \n\rRerror:%d \n\rTerror:%d \n\rESR:%X\n\r\n\r"
     											,can_rx_flame.StdId
-    											,can_rx_flame.IDE
+    										//	,can_rx_flame.IDE
     											,can_rx_flame.RTR
     											,can_rx_flame.DLC
     											,can_rx_flame.Data[0]
+    											,can_rx_flame.Data[1]
+    											,can_rx_flame.Data[2]
     											,CAN_GetReceiveErrorCounter(CAN1)
     											,CAN_GetLSBTransmitErrorCounter(CAN1)
+    											,CAN1 ->ESR
     											);
+
 
 
     		transmit_uart2_s(str);
