@@ -17,21 +17,21 @@ typedef struct _CAN_f{
 }CAN_f;
 
 CAN_f CAN_fm[14]={
-//FNE	MODE	SCALE	STID    				RTR 		IDE			EXID
- {1,	LIST,   BIT16,	{0x001,0x000,0x000,0x000},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//0
- {1,	MASK,   BIT16,	{0x001,0x000,0x000,0x000},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//1
- {0,	LIST,   BIT32,	{0x00,0x00},			{0,0},		{0,0},		{0,0}		},//2
- {0,	MASK,   BIT32,	{0x00,0x00},			{0,0},		{0,0},		{0,0}		},//3
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//4
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//5
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//6
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//7
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//8
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//9
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//10
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//11
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//12
- {0,	LIST,   BIT16,	{0x00,0x0A,0x0B,0x0C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//13
+//FNE	MODE	SCALE	STID    					RTR 		IDE			EXID
+ {1,	MASK,   BIT16,	{0x000,0x400,0x401,0x402},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//0
+ {1,	MASK,   BIT16,	{0x440,0x441,0x442,0x000},	{1,1,1,0},	{0,0,0,0},	{0,0,0,0}	},//1
+ {0,	LIST,   BIT32,	{0x000,0x000},				{0,0},		{0,0},		{0,0}		},//2
+ {0,	MASK,   BIT32,	{0x000,0x000},				{0,0},		{0,0},		{0,0}		},//3
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//4
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//5
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//6
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//7
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//8
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//9
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//10
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//11
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//12
+ {0,	LIST,   BIT16,	{0x000,0x00A,0x00B,0x00C},	{0,0,0,0},	{0,0,0,0},	{0,0,0,0}	},//13
 };
 /* ↑の説明
  *　FNE:そのフィルターを使うか否か
@@ -75,40 +75,29 @@ void CAN_Configuration(void)
 	/* Set up CAN function -------------------------------------------------*/
 	/* タイムトリガ通信モードの有効化・無効化を設定する */
 	CAN_InitStructure.CAN_TTCM 		= ENABLE;
-
 	/* 自動バスオフ管理(Automatic Bus-Off Management)の有効化・無効化を設定する */
 	CAN_InitStructure.CAN_ABOM 		= DISABLE;
-
 	/* 自動再起動モードの有効化・無効化を設定する  */
 	CAN_InitStructure.CAN_AWUM 		= DISABLE;
-
 	/* 自動再送信禁止を有効化・無効化する DISABLE: 自動再送信禁止を無効化(つまり再送信は有効) ENABLE: 自動再送信禁止。正常に送信されなくても送信は1回だけ行われる */
 	CAN_InitStructure.CAN_NART 		= DISABLE;
-
 	/* 受信FIFOロックモードの有効化・無効化を設定する */
 	CAN_InitStructure.CAN_RFLM 		= DISABLE;
-
 	/* 送信FIFOの送信順序を指定する。DISABLE:メッセージIDで送信順序が決定される  ENABLE:ソフトウェアで送信要求が発生された順番で送信される */
 	CAN_InitStructure.CAN_TXFP 		= DISABLE;
-
 	/* CANのModeを設定する */
 	CAN_InitStructure.CAN_Mode 		= CAN_Mode_Normal;
-
 	/* 再同期ジャンプ幅(CANハードウェアが再同期を行う際のビット幅)を時間単位の数で設定する */
 	CAN_InitStructure.CAN_SJW 		= CAN_SJW_1tq;
-
 	/* CANビットタイミングレジスタ(CAN_BTR)のTS1[3:0]を設定する。 */
 	CAN_InitStructure.CAN_BS1 		= CAN_BS1_5tq;
-
 	/* CANビットタイミングレジスタ(CAN_BTR)のTS2[2:0]を設定する */
 	CAN_InitStructure.CAN_BS2 		= CAN_BS2_6tq;
-
 	/* ボーレートプリスケーラ設定する 1～1024 APB1=36MHz*/
 	CAN_InitStructure.CAN_Prescaler	= 3;
 	//CANボーレート = 1Mbps
 	CAN_Init(CAN1, &CAN_InitStructure);
 
-#if 0
 	/* Set up CAN Filter function -------------------------------------------------*/
 	while(filter_num < 14){//フィルターの数だけ繰り返す0~13
 
@@ -179,20 +168,7 @@ void CAN_Configuration(void)
 		filter_num++;
 	}
 
-#else
 
-	CAN_FilterInitStructure.CAN_FilterNumber 			= 0;
-	CAN_FilterInitStructure.CAN_FilterFIFOAssignment	= 0;
-	CAN_FilterInitStructure.CAN_FilterMode				= CAN_FilterMode_IdMask;
-	CAN_FilterInitStructure.CAN_FilterScale				= CAN_FilterScale_16bit;
-	CAN_FilterInitStructure.CAN_FilterIdLow				= 0x0000;
-	CAN_FilterInitStructure.CAN_FilterMaskIdLow			= 0x0000;
-	CAN_FilterInitStructure.CAN_FilterIdHigh			= 0x0000;
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh		= 0x0000;
-	CAN_FilterInitStructure.CAN_FilterActivation 		= ENABLE;
-	CAN_FilterInit(&CAN_FilterInitStructure);
-
-#endif
 #ifdef USE_INTERRUPT_CAN_RX
 	CAN_ITConfig(CAN1, CAN_IT_FMP0,ENABLE);//message pending Interrupt
 #endif

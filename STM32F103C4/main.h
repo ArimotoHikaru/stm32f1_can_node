@@ -42,16 +42,16 @@
 #define USE_USART2
 #define USE_INTERRUPT_USART2
 
-//#define USE_ENCODER
-//#define USE_INTERRUPT_TIM1
-//#define USE_INTERRUPT_TIM2
-//#define USE_INTERRUPT_TIM3
+#define USE_ENCODER
+#define USE_INTERRUPT_TIM1
+#define USE_INTERRUPT_TIM2
+#define USE_INTERRUPT_TIM3
 
 //#define USE_ADC
 
 #define USE_CAN
 #define USE_INTERRUPT_CAN_RX
-#define USE_INTERRUPT_CAN_TX
+//#define USE_INTERRUPT_CAN_TX
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_conf.h"
@@ -70,8 +70,6 @@
 #include "nvic.h"
 
 #define CAN_NodeId_Dualshock3	0x003	//0x00~0x1F
-#define CAN_NodeId_STM32F4_1	0x0F
-
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -80,6 +78,12 @@
 void init();
 void USB_HP_CAN1_TX_IRQHandler(void);
 void USB_LP_CAN1_RX0_IRQHandler(void);
+void Encoder_ClearCount(TIM_TypeDef* TIMx);
+int Encoder_Count(TIM_TypeDef* TIMx);
+void Encoder_int_to_char(TIM_TypeDef* TIMx, int value);
+void Encoder_into_CANflame(TIM_TypeDef* TIMx);
+void CAN_Receive_Check (CanRxMsg* RxMessage);
+
 #endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

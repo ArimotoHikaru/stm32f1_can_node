@@ -23,7 +23,7 @@ void USART2_Configuration(void)
 
 	/* Supply clock source --------------------------------------------------*/
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
 
 	/* Define gpio_config ---------------------------------------------------*/
 	GPIO_InitStructure.GPIO_Pin  	= GPIO_Pin_2;//TX

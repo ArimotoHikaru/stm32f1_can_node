@@ -156,7 +156,8 @@ void PendSV_Handler(void)
 {
 }*/
 volatile uint32_t 	ticker = 0, downticker = 0;
-volatile int32_t 	TIM1_over_flow = 0, TIM1_under_flow = 0,
+volatile uint32_t 	tx_interval[3] = {0};
+volatile uint32_t 	TIM1_over_flow = 0, TIM1_under_flow = 0,
 					TIM2_over_flow = 0, TIM2_under_flow = 0,
 					TIM3_over_flow = 0, TIM3_under_flow = 0;
 /*******************************************************************************
@@ -169,7 +170,9 @@ volatile int32_t 	TIM1_over_flow = 0, TIM1_under_flow = 0,
 void SysTick_Handler(void)
 {
 	ticker++;
-
+	tx_interval[0]++;
+	tx_interval[1]++;
+	tx_interval[2]++;
 	if (downticker > 0)
 	{
 		downticker--;
@@ -186,14 +189,14 @@ void SysTick_Handler(void)
 *******************************************************************************/
 void TIM1_UP_IRQHandler(void)
 {
-  if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
-	 if(((TIM1->CR1)&0x10)>>4 == 0){
-         TIM1_over_flow++;
-     }else{
-         TIM1_under_flow++;
-     }
-    TIM_ClearFlag(TIM1, TIM_IT_Update);
-  }
+	if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
+		if(((TIM1->CR1)&0x10)>>4 == 0){
+			TIM1_over_flow++;
+		}else{
+			TIM1_under_flow++;
+		}
+		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+	}
 
 }
 /*******************************************************************************
@@ -211,7 +214,7 @@ void TIM2_IRQHandler(void)
      }else{
          TIM2_under_flow++;
      }
-    TIM_ClearFlag(TIM2, TIM_IT_Update);
+     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
   }
 }
 /*******************************************************************************

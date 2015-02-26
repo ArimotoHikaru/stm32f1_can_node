@@ -1,22 +1,20 @@
 #include <stdio.h>
 #include "main.h"
 
-#define CAN_LIST_BUF 10
-
 extern uint32_t ticker, downticker;
+extern uint32_t tx_interval[3];
 extern int32_t	TIM1_over_flow, TIM1_under_flow,
 				TIM2_over_flow, TIM2_under_flow,
 				TIM3_over_flow, TIM3_under_flow;
 
 //送信されるメッセージが格納される変数
-CanTxMsg can_tx_flame;
+CanTxMsg can_tx_flame[3];
 CanRxMsg can_rx_flame;
 
-CanTxMsg can_tx_list[CAN_LIST_BUF];
-CanRxMsg can_rx_list[CAN_LIST_BUF];
-
-
 int can_tx_count = 0;
+unsigned short interval_time[3] = {0};//エンコーダーの数だけ用意
+int can_enc_mode[3] = {0};//エンコーダーの数だけ用意
+
 
 void XXX_Configuration(void)
 {
@@ -26,6 +24,176 @@ void XXX_Configuration(void)
 	/* Supply clock source --------------------------------------------------*/
 	/* Define gpio_config ---------------------------------------------------*/
 	/* Set up XXX_function --------------------------------------------------*/
+}
+
+void USB_HP_CAN1_TX_IRQHandler(void)
+{
+
+	if (CAN_GetITStatus(CAN1,CAN_IT_TME)){//メールボックスが空になったら呼び出される　何も送ってない状態では呼び出されない
+		CAN_Transmit(CAN1, &can_tx_flame);//送信
+		CAN_ClearITPendingBit(CAN1,CAN_IT_TME);
+	}
+
+}
+void USB_LP_CAN1_RX0_IRQHandler(void){
+
+	if (CAN_GetITStatus(CAN1,CAN_IT_FMP0)){//新しいメッセージを受信したら呼び出される
+		CAN_Receive(CAN1, CAN_FIFO0, &can_rx_flame);//受信
+		CAN_Receive_Check(&can_rx_flame);
+	}
+
+}
+
+void Encoder_ClearCount(TIM_TypeDef* TIMx)
+{
+	TIMx->CNT = 0;
+}
+
+int Encoder_Count(TIM_TypeDef* TIMx)
+{
+
+	int value = 0;
+
+	if(TIMx == TIM1){
+		value = ( TIM_GetCounter(TIM1) + TIM1_over_flow * 65536 - ( TIM1_under_flow * 65536 ) );
+	}else if(TIMx == TIM2){
+		value = ( TIM_GetCounter(TIM2) + TIM2_over_flow * 65536 - ( TIM2_under_flow * 65536 ) );
+	}else if(TIMx == TIM3){
+		value = ( TIM_GetCounter(TIM3) + TIM3_over_flow * 65536 - ( TIM3_under_flow * 65536 ) );
+	}
+
+	return value;
+
+}
+#if 0
+void can_txflame_configure(uint32_t stid, uint32_t exid, uint8_t ide, uint8_t rtr, uint8_t dlc)
+{
+
+}
+#endif
+void Encoder_int_to_char(TIM_TypeDef* TIMx, int value)
+{
+	if(TIMx == TIM1){
+		can_tx_flame[0].StdId = 0x440;
+		can_tx_flame[0].RTR	= 0;
+		can_tx_flame[0].IDE	= 0;
+		can_tx_flame[0].DLC	= 4;
+		can_tx_flame[0].Data[0] = (char)(value & 0x000000FF);
+		can_tx_flame[0].Data[1] = (char)((value & 0x0000FF00) >> 8);
+		can_tx_flame[0].Data[2] = (char)((value & 0x00FF0000) >> 16);
+		can_tx_flame[0].Data[3] = (char)((value & 0xFF000000) >> 24);
+	}else if(TIMx == TIM2){
+		can_tx_flame[1].StdId = 0x441;
+		can_tx_flame[1].RTR	= 0;
+		can_tx_flame[1].IDE	= 0;
+		can_tx_flame[1].DLC	= 4;
+		can_tx_flame[1].Data[0] = (char)(value & 0x000000FF);
+		can_tx_flame[1].Data[1] = (char)((value & 0x0000FF00) >> 8);
+		can_tx_flame[1].Data[2] = (char)((value & 0x00FF0000) >> 16);
+		can_tx_flame[1].Data[3] = (char)((value & 0xFF000000) >> 24);
+	}else if(TIMx == TIM3){
+		can_tx_flame[2].StdId = 0x442;
+		can_tx_flame[2].RTR	= 0;
+		can_tx_flame[2].IDE	= 0;
+		can_tx_flame[2].DLC	= 4;
+		can_tx_flame[2].Data[0] = (char)(value & 0x000000FF);
+		can_tx_flame[2].Data[1] = (char)((value & 0x0000FF00) >> 8);
+		can_tx_flame[2].Data[2] = (char)((value & 0x00FF0000) >> 16);
+		can_tx_flame[2].Data[3] = (char)((value & 0xFF000000) >> 24);
+	}
+}
+
+void Encoder_into_CANflame(TIM_TypeDef* TIMx)
+{
+	Encoder_int_to_char(TIMx,Encoder_Count(TIMx));
+}
+
+void CAN_Receive_Check (CanRxMsg* RxMessage)
+{
+	switch(RxMessage->StdId){
+
+//エンコーダー値の要求
+	//TIM1
+	case 0x440://エンコーダー値の要求
+
+		Encoder_into_CANflame(TIM1);
+		CAN_Transmit(CAN1, &can_tx_flame[0]);//送信
+
+		break;
+
+	//TIM2
+	case 0x441://エンコーダー値の要求
+
+		Encoder_into_CANflame(TIM2);
+		CAN_Transmit(CAN1, &can_tx_flame[1]);//送信
+
+		break;
+
+	//TIM3
+	case 0x442://エンコーダー値の要求
+
+		Encoder_into_CANflame(TIM3);
+		CAN_Transmit(CAN1, &can_tx_flame[2]);//送信
+
+		break;
+
+//送信オプション変更
+	//TIM1
+	case 0x400://送信オプション変更
+
+		if(RxMessage->Data[0] == 0x00){//エンコーダー値リセット
+			TIM1_over_flow = 0;TIM1_under_flow = 0;
+			Encoder_ClearCount(TIM1);
+
+		}else if(RxMessage->Data[0] == 0x01){//自動送信設定
+			interval_time[0] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[0])&0x00FF));
+			if(interval_time[0] == 65535){
+				can_enc_mode[0] = 0;//自動送信停止
+			}else{
+				can_enc_mode[0] = 1;//自動送信開始
+				tx_interval[0] = 0;
+			}
+		}
+		break;
+
+		//TIM2
+		case 0x401://送信オプション変更
+
+			if(RxMessage->Data[0] == 0x00){//エンコーダー値リセット
+				TIM2_over_flow = 0;TIM2_under_flow = 0;
+				Encoder_ClearCount(TIM2);
+
+			}else if(RxMessage->Data[0] == 0x01){//自動送信設定
+				interval_time[1] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[0])&0x00FF));
+				if(interval_time[1] == 65535){
+					can_enc_mode[1] = 0;//自動送信停止
+				}else{
+					can_enc_mode[1] = 1;//自動送信開始
+					tx_interval[1] = 0;
+				}
+			}
+			break;
+
+			//TIM3
+			case 0x402://送信オプション変更
+
+				if(RxMessage->Data[0] == 0x00){//エンコーダー値リセット
+					TIM3_over_flow = 0;TIM3_under_flow = 0;
+					Encoder_ClearCount(TIM3);
+
+				}else if(RxMessage->Data[0] == 0x01){//自動送信設定
+					interval_time[2] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[0])&0x00FF));
+					if(interval_time[2] == 65535){
+						can_enc_mode[2] = 0;//自動送信停止
+					}else{
+						can_enc_mode[2] = 1;//自動送信開始
+						tx_interval[2] = 0;
+					}
+				}
+				break;
+	default:
+		break;
+	}
 }
 
 void init(void)
@@ -44,13 +212,18 @@ void init(void)
 
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-
 #ifdef USE_ADC
 	ADC_Configuration();
 #endif
 
 #ifdef USE_ENCODER
 	TIM_encoder_Configuration();
+	TIM1_over_flow = 0;TIM1_under_flow = 0;
+	Encoder_ClearCount(TIM1);
+	TIM2_over_flow = 0;TIM2_under_flow = 0;
+	Encoder_ClearCount(TIM2);
+	TIM3_over_flow = 0;TIM3_under_flow = 0;
+	Encoder_ClearCount(TIM3);
 #endif
 
 #ifdef USE_USART2
@@ -63,14 +236,65 @@ void init(void)
 
 	NVIC_Configuration();
 }
-#if 0
+
+
+#if 1
 int main(void)
 {
-	char str[100] = {0};
+	char str[130] = {0};
 	char ledflag = 1;
+
+	RCC_ClocksTypeDef tmp;
+
 	init();
 
 	while(1){
+
+		//TIM1
+		switch(can_enc_mode[0]){
+
+		case 0:
+
+			break;
+		case 1:
+			if(tx_interval[0] >= interval_time[0]){
+				tx_interval[0] = 0;
+				Encoder_into_CANflame(TIM1);
+				CAN_Transmit(CAN1, &can_tx_flame[0]);//送信
+			}
+			break;
+		}
+
+		//TIM2
+		switch(can_enc_mode[1]){
+
+		case 0:
+
+			break;
+		case 1:
+			if(tx_interval[1] >= interval_time[1]){
+				tx_interval[1] = 0;
+				Encoder_into_CANflame(TIM2);
+				CAN_Transmit(CAN1, &can_tx_flame[1]);//送信
+			}
+			break;
+		}
+
+		//TIM3
+		switch(can_enc_mode[2]){
+
+		case 0:
+
+			break;
+		case 1:
+			if(tx_interval[2] >= interval_time[2]){
+				tx_interval[2] = 0;
+				Encoder_into_CANflame(TIM3);
+				CAN_Transmit(CAN1, &can_tx_flame[2]);//送信
+			}
+			break;
+		}
+
 
 		if(downticker == 0 ){
 			downticker = 500;
@@ -83,12 +307,19 @@ int main(void)
 			}
 		}
 
-		while(ticker > 500){
+		while(ticker > 200){
 			ticker = 0;
+			Encoder_into_CANflame(TIM1);
+			Encoder_into_CANflame(TIM2);
+			Encoder_into_CANflame(TIM3);
+
+			RCC_GetClocksFreq(&tmp);
 
 #ifdef USE_USART2
-/*エンコーダー*/ //sprintf(str,"TIM1:%7d O:%3d U:%3d TIM2:%7d O:%3d U:%3d TIM3:%7d O:%3d U:%3d \n\r", TIM_GetCounter(TIM1), TIM1_over_flow, TIM1_under_flow, TIM_GetCounter(TIM2), TIM2_over_flow, TIM2_under_flow, TIM_GetCounter(TIM3), TIM3_over_flow, TIM3_under_flow);
-			sprintf(str,"0:%5d 1:%5d 2:%5d 3:%5d 4:%5d 5:%5d \n\r", GetAdc1Value_xch(0), GetAdc1Value_xch(1), GetAdc1Value_xch(2), GetAdc1Value_xch(3), GetAdc1Value_xch(4), GetAdc1Value_xch(5));
+			sprintf(str,"TIM1:%4X %4X %4X %4X\n\r", can_tx_flame[2].Data[0],can_tx_flame[2].Data[1],can_tx_flame[2].Data[2],can_tx_flame[2].Data[3]);
+/*エンコーダー*/ //sprintf(str,"TIM1:%8d O:%3d U:%3d TIM2:%8d O:%3d U:%3d TIM3:%8d O:%3d U:%3d \n\r", Encoder_Count(TIM1), TIM1_over_flow, TIM1_under_flow, Encoder_Count(TIM2), TIM2_over_flow, TIM2_under_flow, Encoder_Count(TIM3), TIM3_over_flow, TIM3_under_flow);
+/*AD*/		//sprintf(str,"0:%5d 1:%5d 2:%5d 3:%5d 4:%5d 5:%5d \n\r", GetAdc1Value_xch(0), GetAdc1Value_xch(1), GetAdc1Value_xch(2), GetAdc1Value_xch(3), GetAdc1Value_xch(4), GetAdc1Value_xch(5));
+/*Clock*/	//sprintf(str,"SYSCLK:%d HCLK:%X PCLK1:%X PCLK2:%X ADCCLK:%X SystemCoreClock:%X\n\r", tmp.SYSCLK_Frequency, tmp.HCLK_Frequency, tmp.PCLK1_Frequency, tmp.PCLK2_Frequency, tmp.SYSCLK_Frequency, SystemCoreClock);
 			transmit_uart2_s(str);
 #endif
 		}
@@ -99,25 +330,7 @@ int main(void)
 
 
 
-void USB_HP_CAN1_TX_IRQHandler(void)
-{
 
-	if (CAN_GetITStatus(CAN1,CAN_IT_TME)){//メールボックスが空になったら呼び出される　何も送ってない状態では呼び出されない
-		can_tx_flame.Data[0]++;	//送信するデータフィールド
-		if(can_tx_flame.Data[0]>0xff){
-			can_tx_flame.Data[0]=0x00;
-		}
-		CAN_Transmit(CAN1, &can_tx_flame);//送信
-		CAN_ClearITPendingBit(CAN1,CAN_IT_TME);
-	}
-
-}
-void USB_LP_CAN1_RX0_IRQHandler(void){
-	if (CAN_GetITStatus(CAN1,CAN_IT_FMP0)){//新しいメッセージを受信したら呼び出される
-		CAN_Receive(CAN1, CAN_FIFO0, &can_rx_flame);//受信
-	}
-
-}
 
 
 #define CAN_TX
