@@ -177,7 +177,7 @@ void CAN_Receive_Check (CanRxMsg* RxMessage)
 			Encoder_ClearCount(TIM2);
 
 		}else if(RxMessage->Data[0] == 0x01){//©“®‘—Mİ’è
-			interval_time[0] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[2])&0x00FF));
+			interval_time[0] = (unsigned short)(((RxMessage->Data[2] << 8)&0xFF00) | ((RxMessage->Data[1])&0x00FF));
 			if(interval_time[0] == 65535){
 				can_enc_mode[0] = 0;//©“®‘—M’â~
 			}else{
@@ -194,7 +194,7 @@ void CAN_Receive_Check (CanRxMsg* RxMessage)
 			Encoder_ClearCount(TIM3);
 
 		}else if(RxMessage->Data[0] == 0x01){//©“®‘—Mİ’è
-			interval_time[1] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[2])&0x00FF));
+			interval_time[1] = (unsigned short)(((RxMessage->Data[2] << 8)&0xFF00) | ((RxMessage->Data[1])&0x00FF));
 			if(interval_time[1] == 65535){
 				can_enc_mode[1] = 0;//©“®‘—M’â~
 			}else{
@@ -211,7 +211,7 @@ void CAN_Receive_Check (CanRxMsg* RxMessage)
 			Encoder_ClearCount(TIM4);
 
 		}else if(RxMessage->Data[0] == 0x01){//©“®‘—Mİ’è
-			interval_time[2] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[2])&0x00FF));
+			interval_time[2] = (unsigned short)(((RxMessage->Data[2] << 8)&0xFF00) | ((RxMessage->Data[1])&0x00FF));
 			if(interval_time[2] == 65535){
 				can_enc_mode[2] = 0;//©“®‘—M’â~
 			}else{
@@ -228,7 +228,7 @@ void CAN_Receive_Check (CanRxMsg* RxMessage)
 			Encoder_ClearCount(TIM5);
 
 		}else if(RxMessage->Data[0] == 0x01){//©“®‘—Mİ’è
-			interval_time[3] = (unsigned short)(((RxMessage->Data[1] << 8)&0xFF00) | ((RxMessage->Data[2])&0x00FF));
+			interval_time[3] = (unsigned short)(((RxMessage->Data[2] << 8)&0xFF00) | ((RxMessage->Data[1])&0x00FF));
 			if(interval_time[3] == 65535){
 				can_enc_mode[3] = 0;//©“®‘—M’â~
 			}else{
@@ -375,7 +375,6 @@ int main(void)
 			}
 			break;
 		}
-
 
 		while(ticker > 500){
 			ticker = 0;

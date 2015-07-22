@@ -52,14 +52,14 @@
       <target file="stm32f10x_dma.o" lastModified="14d2501e9ea">
          <source file="..\..\..\stm_lib\src\stm32f10x_dma.c" lastModified="14c753e43ad"/>
       </target>
-      <target file="main.o" lastModified="14eb02e67bc">
-         <source file="..\..\..\main.c" lastModified="14eb02e5f37"/>
-      </target>
-      <target file="nvic.o" lastModified="14d2526c163">
-         <source file="..\..\..\nvic.c" lastModified="14cd66581bc"/>
+      <target file="main.o" lastModified="14eb059226c">
+         <source file="..\..\..\main.c" lastModified="14eb0591f8d"/>
       </target>
       <target file="stm32f10x_usart.o" lastModified="14d2501e8d1">
          <source file="..\..\..\stm_lib\src\stm32f10x_usart.c" lastModified="14c7502ffb5"/>
+      </target>
+      <target file="nvic.o" lastModified="14d2526c163">
+         <source file="..\..\..\nvic.c" lastModified="14cd66581bc"/>
       </target>
    </processor>
 </history>
